@@ -1,0 +1,17 @@
+FROM php:8-fpm
+
+# add extensions and others stuffs
+RUN apt-get update && apt-get install -y zip git npm wget zlib1g-dev libicu-dev g++ \
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install pdo pdo_mysql opcache intl
+
+# add symfony cli  
+RUN wget https://get.symfony.com/cli/installer -O - | bash  \
+    && mv /root/.symfony/bin/symfony /usr/local/bin/symfony
+
+# add composer
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+
+WORKDIR /var/www/html
+
+COPY . /var/www/html

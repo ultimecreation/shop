@@ -1,0 +1,57 @@
+version: '3'
+
+networks:
+    shop_network:
+
+services:
+    php:
+        build:
+            context: .
+            dockerfile: ./docker/php/dockerfile
+        container_name: php_shop
+        ports:
+            - "9000:9000"
+        volumes: 
+            - ./:/var/www/html
+            - ./docker/config/php.ini:/usr/local/etc/php/conf.d/php.ini
+        networks: 
+            - shop_network
+
+    nginx:
+        image: nginx:stable
+        container_name: nginx_shop
+        ports:
+            - "80:80"
+        volumes:
+            - ./:/var/www/html
+            - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+        networks: 
+            - shop_network
+
+    mariadb:
+        image: mariadb
+        container_name: mariadb_shop
+        ports:
+            - "3306:3306"
+        volumes:
+            - ./docker/mariadb:/var/lib/mysql
+        networks: 
+            - shop_network
+        restart: always
+        environment:
+            MARIADB_ROOT_PASSWORD: root
+            MARIADB_USER: root
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: phpmyadmin_shop
+        ports:
+            - "81:80"
+        volumes:
+            - /docker/sessions
+        networks: 
+            - shop_network
+        restart: always
+        environment:
+            PMA_HOST: mariadb
+
